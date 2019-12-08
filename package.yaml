@@ -34,10 +34,12 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - biocad
     - hasbolt
     - data-default
     - text
     - containers
+    - transformers
 
 tests:
   biocad-test:
@@ -48,3 +50,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - biocad

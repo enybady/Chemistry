@@ -2,24 +2,34 @@
 module Lib where
 
 import Database.Bolt
-import Data.Default
-import Data.Map
-import Prelude hiding (id)
-import Data.Text (pack, Text)
-import Database.Bolt.Serialization
+import Data.Text
 
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
 
-data Molecule = Molecule {id :: Int, smiles :: Text, iupacName :: Text} deriving (Show, Eq)
+data Molecule = Molecule {molID :: Int, molSmiles :: Text, molIupacName :: Text} deriving (Show, Eq)
+
 instance IsValue Molecule where
-  toValue molecule = toValue $ props $ ["id" =: id molecule, "smiles" =: smiles molecule, "iupacName" =: iupacName molecule]
+  toValue molecule = toValue $ props $ ["id" =: molID molecule, "smiles" =: molSmiles molecule, "iupacName" =: molIupacName molecule]
 
 instance RecordValue Molecule where
-  exact (S s) = do 
-    map <- nodeProps <$> fromStructure s
-    let (I id_v)        = map ! "id"
-    let (T smiles_v)    = map ! "smiles"
-    let (T iupacName_v) = map ! "iupacName"
+  exact s = do 
+    node        <- exact s
+    let props   =  nodeProps node
+    let id_v    =  nodeIdentity node
+    smiles_v    <- props `at` "smiles" >>= exact
+    iupacName_v <- props `at` "iupacName" >>= exact
     return (Molecule id_v smiles_v iupacName_v)
 
+data Reaction = Reaction {reactID :: Int, reactName :: Text} deriving (Show, Eq)
+
+instance IsValue Reaction where
+  toValue reaction = toValue $ props $ ["id" =: reactID reaction, "name" =: reactName reaction]
+
+instance RecordValue Reaction where
+  exact s = do 
+    node        <- exact s
+    let props   =  nodeProps node
+    let id_v    =  nodeIdentity node
+    name_v    <- props `at` "name" >>= exact
+    return (Reaction id_v name_v)
